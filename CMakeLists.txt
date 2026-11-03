@@ -15,9 +15,34 @@ add_custom_target(
     )
 
 
-find_package(OpenSSL REQUIRED)
-find_package(GTest REQUIRED)
-find_package(argparse REQUIRED)
+include(cmake/CPM.cmake)
+CPMAddPackage(
+    NAME googletest
+    GIT_REPOSITORY "https://github.com/google/googletest"
+    GIT_TAG "v1.17.0"
+    OPTIONS
+        "INSTALL_GTEST OFF"
+        "BUILD_GMOCK OFF"
+)
+
+CPMAddPackage(
+    NAME argparse
+    GIT_REPOSITORY "https://github.com/p-ranav/argparse"
+    GIT_TAG "v3.2"
+)
+
+find_package(OpenSSL QUIET)
+if(NOT OpenSSL_FOUND)
+    message(STATUS "OpenSSL not found on system. Building from source via CPM...")
+
+    CPMAddPackage(
+        NAME openssl
+        GIT_REPOSITORY "https://github.com/jimmy-park/openssl-cmake"
+        GIT_TAG "4.1.0"
+        OPTIONS
+            "OPENSSL_BUILD_TESTS OFF"
+    )
+endif()
 
 
 file(GLOB_RECURSE LibrarySources src/lib/**.cpp)
@@ -29,17 +54,17 @@ add_compile_definitions(JWT_VERSION=\"${JWT_VERSION}\")
 
 add_library(JwtLib STATIC ${LibrarySources})
 target_include_directories(JwtLib PUBLIC ${JWT_INCLUDE_DIR})
-target_link_libraries(JwtLib openssl::openssl)
+target_link_libraries(JwtLib OpenSSL::Crypto)
 target_precompile_headers(JwtLib PUBLIC ${LibraryHeaders})
 
 add_executable(JwtUtil ${UtilSources})
 target_include_directories(JwtUtil PUBLIC ${JWT_INCLUDE_DIR})
 target_link_libraries(JwtUtil PRIVATE JwtLib)
-target_link_libraries(JwtUtil PRIVATE argparse::argparse)
+target_link_libraries(JwtUtil PRIVATE argparse)
 
 add_executable(JwtTest ${TestSources})
 target_include_directories(JwtTest PUBLIC ${JWT_INCLUDE_DIR})
 target_link_libraries(JwtTest PRIVATE JwtLib)
-target_link_libraries(JwtTest PRIVATE gtest::gtest)
+target_link_libraries(JwtTest PRIVATE gtest_main)
 
 

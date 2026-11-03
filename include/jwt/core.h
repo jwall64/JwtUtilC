@@ -1,7 +1,6 @@
 #ifndef JWT_CORE_H
 #define JWT_CORE_H
 
-#include <cstddef>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -9,6 +8,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 
 /**
